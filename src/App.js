@@ -8,12 +8,7 @@ import Signin from "./components/Signin/Signin";
 import Register from "./components/Register/Register";
 import "tachyons";
 import Particles from 'react-particles-js';
-import Clarifai from "clarifai";
 import './App.css';
-
-const app = new Clarifai.App({
-  apiKey: "7554a6da794343bda25acabd7e768aa1"
-})
 
 const particlesOptions = {
   particles: {
@@ -34,6 +29,23 @@ function App() {
   const[box, setBox] = useState({});
   const[route, setRoute] = useState("signin");
   const[isSignedIn, setIsSignedIn] = useState(false);
+  const[user, setUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    entries: 0,
+    joined: ""
+  });
+
+  function loadUser(user) {
+    setUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      entries: user.entries,
+      joined: user.joined
+    })
+  }
 
   function calculateFaceLocation(data) {
     const clarifaiFace =  data.outputs[0].data.regions[0].region_info.bounding_box;
@@ -54,14 +66,41 @@ function App() {
 
   function handleButtonSubmit() {
     setImageUrl(input);
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, input)
-    .then(response => calculateFaceLocation(response))
+    fetch("https://protected-bayou-93584.herokuapp.com/imageurl", {
+          method: "post",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            input: input
+          })
+    })
+    .then(response => response.json())
+    .then(response => {
+      if(response) {
+        fetch("https://protected-bayou-93584.herokuapp.com/image", {
+          method: "put",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            id: user.id
+          })
+        }).then(response => response.json()).then(count => {
+          setUser((prevItems) => {
+            return {
+              ...prevItems,
+              entries: count
+            }
+          })
+        })
+        .catch(err => console.log(err))
+      }
+      calculateFaceLocation(response)})
     .catch(err => console.log(err))
   }
 
   function handleRouteChange(data) {
     if (data === "signout") {
       setIsSignedIn(false);
+      setImageUrl("");
+      setBox({});
     } else if (data === "home") {
       setIsSignedIn(true);
     }
@@ -79,7 +118,7 @@ function App() {
         route === "home" ?
         <div>
           <Logo />
-          <Rank />
+          <Rank name={user.name} entries={user.entries}/>
           <ImageLinkForm 
             onInputChange={handleInputChang}
             onButtonSubmit={handleButtonSubmit}
@@ -91,8 +130,8 @@ function App() {
         </div>
         : (
           route === "signin" 
-          ? <Signin onRouteChange={handleRouteChange}/>
-          : <Register onRouteChange={handleRouteChange}/>
+          ? <Signin onRouteChange={handleRouteChange} loadUser={loadUser}/>
+          : <Register onRouteChange={handleRouteChange} loadUser={loadUser}/>
         )  
       }
     </div>
