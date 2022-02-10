@@ -13,17 +13,22 @@ function Signin({onRouteChange, loadUser}) {
         setSignInPassword(event.target.value);
     }
 
+    function saveAuthTokenInSession(token) {
+        window.localStorage.setItem("token", token)
+    }
+
     function onSubmitSignIn() {
-        fetch("https://protected-bayou-93584.herokuapp.com/signin", {
+        fetch("http://localhost:5001/signin", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 email: signInEmail,
                 password: signInPassword
             })
-        }).then(response => response.json()).then(user => {
-            if (user.id){
-                loadUser(user);
+        }).then(response => response.json()).then(data => {
+            if (data.user && data.success === "true"){
+                saveAuthTokenInSession(data.token)
+                loadUser(data.user);
                 onRouteChange("home");
             }
         })

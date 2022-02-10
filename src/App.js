@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navigation from "./components/Navigation/Navigation";
 import Logo from "./components/Logo/Logo";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
@@ -6,8 +6,9 @@ import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import Rank from "./components/Rank/Rank";
 import Signin from "./components/Signin/Signin";
 import Register from "./components/Register/Register";
-import "tachyons";
 import Particles from 'react-particles-js';
+import Modal from "./components/Modal/Modal";
+import Profile from './components/Profile/Profile';
 import './App.css';
 
 const particlesOptions = {
@@ -29,12 +30,15 @@ function App() {
   const[box, setBox] = useState({});
   const[route, setRoute] = useState("signin");
   const[isSignedIn, setIsSignedIn] = useState(false);
+  const[isProfileOpen, setIsProfileOpen] = useState(false);
   const[user, setUser] = useState({
     id: "",
     name: "",
     email: "",
     entries: 0,
-    joined: ""
+    joined: "",
+    pet: "",
+    age: "",
   });
 
   function loadUser(user) {
@@ -43,7 +47,9 @@ function App() {
       name: user.name,
       email: user.email,
       entries: user.entries,
-      joined: user.joined
+      joined: user.joined,
+      pet: user.pet,
+      age: user.age,
     })
   }
 
@@ -65,10 +71,14 @@ function App() {
   }
 
   function handleButtonSubmit() {
+    const token = window.localStorage.getItem("token")
     setImageUrl(input);
-    fetch("https://protected-bayou-93584.herokuapp.com/imageurl", {
+    fetch("http://localhost:5001/imageurl", {
           method: "post",
-          headers: {"Content-Type": "application/json"},
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+          },
           body: JSON.stringify({
             input: input
           })
@@ -76,9 +86,12 @@ function App() {
     .then(response => response.json())
     .then(response => {
       if(response) {
-        fetch("https://protected-bayou-93584.herokuapp.com/image", {
+        fetch("http://localhost:5001/image", {
           method: "put",
-          headers: {"Content-Type": "application/json"},
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+          },
           body: JSON.stringify({
             id: user.id
           })
@@ -101,11 +114,39 @@ function App() {
       setIsSignedIn(false);
       setImageUrl("");
       setBox({});
+      setRoute("signin");
     } else if (data === "home") {
       setIsSignedIn(true);
+      setRoute(data);
     }
-    setRoute(data);
   }
+
+  function toggleModal() {
+    setIsProfileOpen(!isProfileOpen);
+  }
+
+  useEffect(
+    () => {
+      const token = window.localStorage.getItem("token");
+      if (token) {
+        fetch("http://localhost:5001/signin", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+          }
+        })
+          .then((res) => res.json())
+          .then((user) => {
+            if (user && user.id) {
+              loadUser(user)
+              handleRouteChange("home");
+            }
+          })
+          .catch((error) => console.log(error))
+      }
+    }
+  , [])
 
   return (
     <div className="App">
@@ -113,7 +154,19 @@ function App() {
         className="particles" 
         params={particlesOptions}
       />
-      <Navigation onRouteChange={handleRouteChange} isSignedIn={isSignedIn}/>
+      <Navigation onRouteChange={handleRouteChange} isSignedIn={isSignedIn} toggleModal={toggleModal}/>
+      {
+        isProfileOpen 
+        && 
+        <Modal>
+          <Profile 
+            isProfileOpen={isProfileOpen} 
+            toggleModal={toggleModal}
+            user={user}
+            loadUser={loadUser}
+          />
+        </Modal>
+      }
       {
         route === "home" ?
         <div>

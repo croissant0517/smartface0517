@@ -18,7 +18,7 @@ function Register({onRouteChange, loadUser}) {
     }
 
     function onSubmitRegister() {
-        fetch("https://protected-bayou-93584.herokuapp.com/register", {
+        fetch("http://localhost:5001/register", {
             method: "post",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
