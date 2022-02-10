@@ -73,7 +73,7 @@ function App() {
   function handleButtonSubmit() {
     const token = window.localStorage.getItem("token")
     setImageUrl(input);
-    fetch("http://localhost:5001/imageurl", {
+    fetch("https://protected-bayou-93584.herokuapp.com/imageurl", {
           method: "post",
           headers: {
             "Content-Type": "application/json",
@@ -86,7 +86,7 @@ function App() {
     .then(response => response.json())
     .then(response => {
       if(response) {
-        fetch("http://localhost:5001/image", {
+        fetch("https://protected-bayou-93584.herokuapp.com/image", {
           method: "put",
           headers: {
             "Content-Type": "application/json",
@@ -129,7 +129,7 @@ function App() {
     () => {
       const token = window.localStorage.getItem("token");
       if (token) {
-        fetch("http://localhost:5001/signin", {
+        fetch("https://protected-bayou-93584.herokuapp.com/signin", {
           method: "post",
           headers: {
             "Content-Type": "application/json",

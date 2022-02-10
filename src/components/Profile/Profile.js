@@ -35,7 +35,7 @@ const Profile = ({isProfileOpen, toggleModal, user, loadUser}) => {
 
     const handleProfileUpdate = (data) => {
         const token = window.localStorage.getItem("token")
-        fetch(`http://localhost:5001/profile/${user.id}`, {
+        fetch(`https://protected-bayou-93584.herokuapp.com/profile/${user.id}`, {
             method: "post",
             headers: {
                 "Content-type": "application/json",
