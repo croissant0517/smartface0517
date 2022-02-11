@@ -118,6 +118,8 @@ function App() {
     } else if (data === "home") {
       setIsSignedIn(true);
       setRoute(data);
+    } else if (data) {
+      setRoute(data);
     }
   }
 

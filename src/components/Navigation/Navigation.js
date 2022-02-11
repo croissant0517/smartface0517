@@ -14,14 +14,14 @@ function Navigation({onRouteChange, isSignedIn, toggleModal}) {
                 <a
                 onClick={(event) => {
                     event.preventDefault();
-                    return onRouteChange("signin");
+                    onRouteChange("signin");
                 }} 
                 href="/signin" 
                 className="f3 link dim black underline pa3 pointer">Sign In</a>
                 <a 
                 onClick={(event) => {
                     event.preventDefault();
-                    return onRouteChange("register")
+                    onRouteChange("register")
                 }} 
                 href="/register" 
                 className="f3 link dim black underline pa3 pointer">Register</a>
